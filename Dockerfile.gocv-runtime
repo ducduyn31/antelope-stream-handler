@@ -1,0 +1,18 @@
+FROM tinhvantvd/opencv:4.5.3-gstreamer-alpine3.14 as build-stage
+
+FROM golang:1.16.6-alpine3.14
+
+COPY --from=build-stage /usr/local/lib /usr/local/lib64
+COPY --from=build-stage /usr/local/lib/pkgconfig/opencv4.pc /usr/local/lib64/pkgconfig/opencv4.pc
+COPY --from=build-stage /usr/local/include/opencv4/opencv2 /usr/local/include/opencv4/opencv2
+
+RUN apk update && apk add --no-cache \
+    libstdc++ ca-certificates libjpeg-turbo libpng libwebp libwebp-dev tiff \
+    libavc1394 openblas libgphoto2 gstreamer gst-plugins-base && \
+    rm -rf /var/cache/apk/*
+
+ENV PKG_CONFIG_PATH /usr/local/lib64/pkgconfig
+ENV LD_LIBRARY_PATH /usr/local/lib64
+ENV CGO_CPPFLAGS -I/usr/local/include
+ENV CGO_CXXFLAGS "--std=c++1z"
+ENV CGO_LDFLAGS "-L/usr/local/lib -lopencv_core -lopencv_videoio -lopencv_imgproc -lopencv_highgui -lopencv_imgcodecs -lopencv_objdetect -lopencv_features2d -lopencv_video -lopencv_dnn"

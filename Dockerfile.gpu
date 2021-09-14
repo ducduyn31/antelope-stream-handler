@@ -1,0 +1,26 @@
+FROM tinhvantvd/gocv:4.5.3-alpine-gstreamer as build
+
+RUN apk update && apk add --no-cache git build-base
+
+ENV USER=antelope
+ENV UID=10001
+
+RUN adduser --disabled-password --gecos "" --home "/nonexistent" --shell "/sbin/nologin" --no-create-home --uid "${UID}" "${USER}"
+
+WORKDIR /src
+
+COPY . .
+
+RUN go get -d -v
+
+RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/app
+
+FROM tinhvantvd/opencv:4.5.3-gstreamer-alpine3.14
+
+COPY --from=build /etc/passwd /etc/passwd
+
+COPY --from=build /etc/group /etc/group
+
+COPY --from=build /go/bin/app /go/bin/
+
+ENTRYPOINT ["/go/bin/app"]

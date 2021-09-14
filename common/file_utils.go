@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 func FileHaveValue(path string, line string) (bool, error) {
@@ -24,7 +25,8 @@ func FileHaveValue(path string, line string) (bool, error) {
 }
 
 func OpenFileAndReadLines(path string) ([]string, *os.File, error) {
-	f, err := os.OpenFile(path, os.O_CREATE | os.O_RDWR | os.O_APPEND, 0600)
+	_ = os.MkdirAll(filepath.Dir(path), os.ModePerm)
+	f, err := os.OpenFile(path, os.O_CREATE | os.O_RDWR | os.O_APPEND, 0777)
 	if err != nil {
 		defer func(f *os.File) {
 			_ = f.Close()
