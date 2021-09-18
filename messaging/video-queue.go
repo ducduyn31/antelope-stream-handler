@@ -72,7 +72,7 @@ func GetWriter() *kafka.Writer {
 		kafkaWriter = &kafka.Writer{
 			Addr:     kafka.TCP(os.Getenv("KAFKA_URI")),
 			Topic:    "motion",
-			Balancer: &kafka.LeastBytes{},
+			Balancer: &kafka.Hash{},
 		}
 	}
 	return kafkaWriter
