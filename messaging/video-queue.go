@@ -1,8 +1,8 @@
 package messaging
 
 import (
+	"antelope-stream-chunking/common"
 	"context"
-	b64 "encoding/base64"
 	"fmt"
 	"github.com/segmentio/kafka-go"
 	log "github.com/sirupsen/logrus"
@@ -57,11 +57,10 @@ func SendToKafka(payload *gocv.Mat, order int, source string) {
 		log.Error(err)
 		return
 	}
-	b64Image := b64.StdEncoding.EncodeToString(bufferImage)
 
 	err = GetWriter().WriteMessages(context.Background(), kafka.Message{
-		Key:   []byte(source),
-		Value: []byte(fmt.Sprintf("order=%d&image=%s", order, b64Image)),
+		Key: []byte(source),
+		Value: common.ConcatByteArr([]byte(fmt.Sprintf("order=%d&image=", order)), bufferImage),
 	})
 }
 
