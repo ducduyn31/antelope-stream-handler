@@ -1,22 +1,54 @@
 package messaging
 
 import (
-	"antelope-stream-chunking/common"
 	"context"
+	b64 "encoding/base64"
 	"fmt"
 	"github.com/segmentio/kafka-go"
 	log "github.com/sirupsen/logrus"
 	"gocv.io/x/gocv"
+	"net"
 	"os"
+	"strconv"
 )
 
-func establishConnection(topic string, partition int) *kafka.Conn {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", os.Getenv("KAFKA_URI"), topic, partition)
+func establishConnection(topic string, partitions int) error {
+	conn, err := kafka.Dial("tcp", os.Getenv("KAFKA_URI"))
+	defer func(conn *kafka.Conn) {
+		_ = conn.Close()
+	}(conn)
 	if err != nil {
 		log.Fatal(err)
-		return nil
+		return err
 	}
-	return conn
+
+	controller, err := conn.Controller()
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	var controllerConn *kafka.Conn
+
+	controllerConn, err = kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	defer func(controllerConn *kafka.Conn) {
+		_ = controllerConn.Close()
+	}(controllerConn)
+
+	err = controllerConn.CreateTopics(kafka.TopicConfig{
+		Topic: topic,
+		NumPartitions: partitions,
+		ReplicationFactor: 1,
+	})
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	return nil
 }
 
 func SendToKafka(payload *gocv.Mat, order int, source string) {
@@ -25,10 +57,11 @@ func SendToKafka(payload *gocv.Mat, order int, source string) {
 		log.Error(err)
 		return
 	}
+	b64Image := b64.StdEncoding.EncodeToString(bufferImage)
 
 	err = GetWriter().WriteMessages(context.Background(), kafka.Message{
-		Key: []byte(source),
-		Value: common.ConcatByteArr([]byte(fmt.Sprintf("order=%d&image=", order)), bufferImage),
+		Key:   []byte(source),
+		Value: []byte(fmt.Sprintf("order=%d&image=%s", order, b64Image)),
 	})
 }
 
@@ -36,7 +69,7 @@ var kafkaWriter *kafka.Writer
 
 func GetWriter() *kafka.Writer {
 	if kafkaWriter == nil {
-		establishConnection("motion", 0)
+		_ = establishConnection("motion", 10)
 		kafkaWriter = &kafka.Writer{
 			Addr:     kafka.TCP(os.Getenv("KAFKA_URI")),
 			Topic:    "motion",

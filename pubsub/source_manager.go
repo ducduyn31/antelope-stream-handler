@@ -64,13 +64,13 @@ func (s *sourceManager) AddSourceToMem(source string) {
 
 func (s *sourceManager) ActivateAllSources() {
 	for _, source := range s.Sources {
-		log.Infof("Activating %s", source)
 		s.ActivateSource(source)
 	}
 }
 
 func (s *sourceManager) ActivateSource(source string) {
 	if running, ok := s.SourceStatus[source]; ok {
+		log.Infof("Activating %s:  | Current Status: %t", source, running)
 		go s.handlerManager.Signal(source, s.batchSize)
 		if !running {
 			ch := s.handlerManager.Subscribe(source)
