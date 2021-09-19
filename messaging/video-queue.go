@@ -14,12 +14,12 @@ import (
 )
 
 type Message struct {
-	Order     int64
-	Source    string
-	Frame     string
-	Width     int
-	Height    int
-	Timestamp int64
+	Order     int64  `json:"order"`
+	Source    string `json:"source"`
+	Frame     string `json:"frame"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 func establishConnection(topic string, partitions int) error {
