@@ -60,7 +60,7 @@ func SendToKafka(payload *gocv.Mat, order int, source string) {
 
 	err = GetWriter().WriteMessages(context.Background(), kafka.Message{
 		Key: []byte(source),
-		Value: common.ConcatByteArr([]byte(fmt.Sprintf("order=%d&image=", order)), bufferImage),
+		Value: common.ConcatByteArr([]byte(fmt.Sprintf("[%s]order=%d&image=", source, order)), bufferImage),
 	})
 }
 
