@@ -1,16 +1,26 @@
 package messaging
 
 import (
-	"antelope-stream-chunking/common"
 	"context"
-	"fmt"
+	b64 "encoding/base64"
+	"encoding/json"
 	"github.com/segmentio/kafka-go"
 	log "github.com/sirupsen/logrus"
 	"gocv.io/x/gocv"
 	"net"
 	"os"
 	"strconv"
+	"time"
 )
+
+type Message struct {
+	Order     int64
+	Source    string
+	Frame     string
+	Width     int
+	Height    int
+	Timestamp int64
+}
 
 func establishConnection(topic string, partitions int) error {
 	conn, err := kafka.Dial("tcp", os.Getenv("KAFKA_URI"))
@@ -40,8 +50,8 @@ func establishConnection(topic string, partitions int) error {
 	}(controllerConn)
 
 	err = controllerConn.CreateTopics(kafka.TopicConfig{
-		Topic: topic,
-		NumPartitions: partitions,
+		Topic:             topic,
+		NumPartitions:     partitions,
 		ReplicationFactor: 1,
 	})
 	if err != nil {
@@ -51,16 +61,33 @@ func establishConnection(topic string, partitions int) error {
 	return nil
 }
 
-func SendToKafka(payload *gocv.Mat, order int, source string) {
+func SendToKafka(payload *gocv.Mat, order int64, source string) {
 	bufferImage, err := gocv.IMEncode(gocv.JPEGFileExt, *payload)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	b64Image := b64.StdEncoding.EncodeToString(bufferImage)
+
+	m := Message{
+		Order:     order,
+		Source:    source,
+		Frame:     b64Image,
+		Width:     payload.Cols(),
+		Height:    payload.Rows(),
+		Timestamp: time.Now().Unix(),
+	}
+
+	jsonMessage, err := json.Marshal(m)
+
 	if err != nil {
 		log.Error(err)
 		return
 	}
 
 	err = GetWriter().WriteMessages(context.Background(), kafka.Message{
-		Key: []byte(source),
-		Value: common.ConcatByteArr([]byte(fmt.Sprintf("[%s]order=%d&image=", source, order)), bufferImage),
+		Key:   []byte(source),
+		Value: jsonMessage,
 	})
 }
 

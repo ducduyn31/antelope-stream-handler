@@ -141,7 +141,7 @@ func ProcessStreamCV(signals <-chan int, source string) {
 	}()
 
 	frame := gocv.NewMat()
-	order := 0
+	order := int64(0)
 	consecutiveFails := 0
 	for {
 		if vCap.IsOpened() && !s.locked && consecutiveFails < 100 {
