@@ -89,6 +89,10 @@ func SendToKafka(payload *gocv.Mat, order int64, source string) {
 		Key:   []byte(source),
 		Value: jsonMessage,
 	})
+
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 var kafkaWriter *kafka.Writer
