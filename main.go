@@ -1,6 +1,7 @@
 package main
 
 import (
+	"antelope-stream-chunking/common"
 	"antelope-stream-chunking/middlewares"
 	"antelope-stream-chunking/pubsub"
 	"fmt"
@@ -8,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
-	"github.com/toorop/gin-logrus"
 	"io"
 	"os"
 	"time"
@@ -61,7 +61,7 @@ func main() {
 	rootPort := os.Getenv("PORT")
 
 	rootRouter.Use(middlewares.HttpExceptionHandle())
-	rootRouter.Use(ginlogrus.Logger(log.StandardLogger()), gin.Recovery())
+	rootRouter.Use(common.WebLogger(log.StandardLogger()), gin.Recovery())
 
 	log.Infof("PORT: %s, ENV: %s", rootPort, os.Getenv("ENV"))
 	InitRouter(rootRouter)
