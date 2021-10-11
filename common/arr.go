@@ -1,5 +1,7 @@
 package common
 
+import "strings"
+
 func StrArrContains(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
@@ -25,4 +27,17 @@ func ConcatByteArr(bytes ...[]byte) []byte {
 		result = append(result, el...)
 	}
 	return result
+}
+
+func ConcatStringArr(strArr []string, char string) string {
+	var sb strings.Builder
+	for _, el := range strArr {
+		if sb.Len() == 0 {
+			sb.WriteString(el)
+		} else {
+			sb.WriteString(char + el)
+		}
+	}
+
+	return sb.String()
 }

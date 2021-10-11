@@ -1,16 +1,11 @@
 package messaging
 
 import (
-	"context"
-	b64 "encoding/base64"
-	"encoding/json"
 	"github.com/segmentio/kafka-go"
 	log "github.com/sirupsen/logrus"
-	"gocv.io/x/gocv"
 	"net"
 	"os"
 	"strconv"
-	"time"
 )
 
 type Message struct {
@@ -61,39 +56,39 @@ func establishConnection(topic string, partitions int) error {
 	return nil
 }
 
-func SendToKafka(payload *gocv.Mat, order int64, source string) {
-	bufferImage, err := gocv.IMEncode(gocv.JPEGFileExt, *payload)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	b64Image := b64.StdEncoding.EncodeToString(bufferImage)
-
-	m := Message{
-		Order:     order,
-		Source:    source,
-		Frame:     b64Image,
-		Width:     payload.Cols(),
-		Height:    payload.Rows(),
-		Timestamp: time.Now().Unix(),
-	}
-
-	jsonMessage, err := json.Marshal(m)
-
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	err = GetWriter().WriteMessages(context.Background(), kafka.Message{
-		Key:   []byte(source),
-		Value: jsonMessage,
-	})
-
-	if err != nil {
-		log.Error(err)
-	}
-}
+//func SendToKafka(payload *gocv.Mat, order int64, source string) {
+//	bufferImage, err := gocv.IMEncode(gocv.JPEGFileExt, *payload)
+//	if err != nil {
+//		log.Error(err)
+//		return
+//	}
+//	b64Image := b64.StdEncoding.EncodeToString(bufferImage)
+//
+//	m := Message{
+//		Order:     order,
+//		Source:    source,
+//		Frame:     b64Image,
+//		Width:     payload.Cols(),
+//		Height:    payload.Rows(),
+//		Timestamp: time.Now().Unix(),
+//	}
+//
+//	jsonMessage, err := json.Marshal(m)
+//
+//	if err != nil {
+//		log.Error(err)
+//		return
+//	}
+//
+//	err = GetWriter().WriteMessages(context.Background(), kafka.Message{
+//		Key:   []byte(source),
+//		Value: jsonMessage,
+//	})
+//
+//	if err != nil {
+//		log.Error(err)
+//	}
+//}
 
 var kafkaWriter *kafka.Writer
 

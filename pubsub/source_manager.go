@@ -74,7 +74,7 @@ func (s *sourceManager) ActivateSource(source string) {
 		go s.handlerManager.Signal(source, s.batchSize)
 		if !running {
 			ch := s.handlerManager.Subscribe(source)
-			go ProcessStreamCV(ch, source)
+			go ProcessStream(ch, source)
 			s.SourceStatus[source] = true
 		}
 	} else {

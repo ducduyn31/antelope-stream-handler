@@ -1,0 +1,5 @@
+FROM tinhvantvd/gstreamer-go:latest
+
+ENV CGO_ENABLED=1
+
+WORKDIR /app

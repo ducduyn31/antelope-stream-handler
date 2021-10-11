@@ -8,6 +8,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/segmentio/kafka-go v0.4.18
 	github.com/sirupsen/logrus v1.8.1
-	gocv.io/x/gocv v0.25.0
+	github.com/tinyzimmer/go-glib v0.0.24
+	github.com/tinyzimmer/go-gst v0.2.31
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )
